@@ -269,7 +269,8 @@ ngx_log_init(u_char *prefix)
     size_t   nlen, plen;
 
     ngx_log.file = &ngx_log_file;
-    ngx_log.log_level = NGX_LOG_NOTICE;
+    ngx_log.log_level = NGX_LOG_DEBUG | NGX_LOG_DEBUG_ALLOC | 
+		NGX_LOG_DEBUG_CORE | NGX_LOG_DEBUG_HTTP | NGX_LOG_DEBUG_EVENT | NGX_LOG_DEBUG_MUTEX;
 
     name = (u_char *) NGX_ERROR_LOG_PATH;
 

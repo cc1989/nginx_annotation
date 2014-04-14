@@ -312,7 +312,7 @@ ngx_epoll_init(ngx_cycle_t *cycle, ngx_msec_t timer)
 #endif
     }
 
-    if (nevents < epcf->events) {
+    if (nevents < epcf->events) {  //以配置的为准
         if (event_list) {
             ngx_free(event_list);
         }
@@ -673,7 +673,7 @@ ngx_epoll_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
                 rev->ready = 1;
             }
 
-            if (flags & NGX_POST_EVENTS) {
+            if (flags & NGX_POST_EVENTS) {  //使用了accept锁
                 queue = (ngx_event_t **) (rev->accept ?
                                &ngx_posted_accept_events : &ngx_posted_events);
 
@@ -707,7 +707,7 @@ ngx_epoll_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
                 wev->ready = 1;
             }
 
-            if (flags & NGX_POST_EVENTS) {
+            if (flags & NGX_POST_EVENTS) {  //使用了accept锁
                 ngx_locked_post_event(wev, &ngx_posted_events);
 
             } else {

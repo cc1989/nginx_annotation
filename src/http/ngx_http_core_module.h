@@ -151,6 +151,7 @@ typedef struct {
 
 
 typedef struct {
+	//http中所有server组成的数组
     ngx_array_t                servers;         /* ngx_http_core_srv_conf_t */
 
     ngx_http_phase_engine_t    phase_engine;

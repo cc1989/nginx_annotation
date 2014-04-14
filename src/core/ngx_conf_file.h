@@ -100,8 +100,8 @@ struct ngx_open_file_s {
 #define NGX_MODULE_V1_PADDING  0, 0, 0, 0, 0, 0, 0, 0
 
 struct ngx_module_s {
-    ngx_uint_t            ctx_index;
-    ngx_uint_t            index;
+    ngx_uint_t            ctx_index;  //同类模块中配置数组的下标
+    ngx_uint_t            index;  //所有模块中配置数组的下标
 
     ngx_uint_t            spare0;
     ngx_uint_t            spare1;

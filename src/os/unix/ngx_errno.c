@@ -25,7 +25,7 @@
  */
 
 
-static ngx_str_t  *ngx_sys_errlist;  //³ö´í×Ö·ûÁ´±í
+static ngx_str_t  *ngx_sys_errlist;  //å‡ºé”™å­—ç¬¦é“¾è¡¨
 static ngx_str_t   ngx_unknown_error = ngx_string("Unknown error");
 
 

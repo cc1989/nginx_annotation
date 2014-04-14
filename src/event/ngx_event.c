@@ -205,7 +205,7 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
     ngx_uint_t  flags;
     ngx_msec_t  timer, delta;
 
-    if (ngx_timer_resolution) {
+    if (ngx_timer_resolution) {  //初始化为0
         timer = NGX_TIMER_INFINITE;
         flags = 0;
 
@@ -222,11 +222,12 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
 #endif
     }
 
+	//ngx_accept_disabled用于实现负载平衡
     if (ngx_use_accept_mutex) {
         if (ngx_accept_disabled > 0) {
             ngx_accept_disabled--;
 
-        } else {
+        } else {  //只有获得accept锁的进程才添加监听事件到监听队列中
             if (ngx_trylock_accept_mutex(cycle) == NGX_ERROR) {
                 return;
             }
@@ -245,14 +246,17 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
     }
 
     delta = ngx_current_msec;
-
-    (void) ngx_process_events(cycle, timer, flags);
+	//等待监听事件发送，并调用事件处理回调函数处理监听事件
+    (void) ngx_process_events(cycle, timer, flags);  
 
     delta = ngx_current_msec - delta;
 
     ngx_log_debug1(NGX_LOG_DEBUG_EVENT, cycle->log, 0,
                    "timer delta: %M", delta);
 
+	//ngx_posted_accept_events是accept事件的队列，这里会依次调用每个事件的handler并将其删除,
+	//accept事件的handler就是ngx_event_accept，它是在ngx_event_process_init中为每个监听socket
+	//的读事件添加的，用来处理新建连接的初始化。
     if (ngx_posted_accept_events) {
         ngx_event_process_posted(cycle, &ngx_posted_accept_events);
     }
@@ -734,6 +738,7 @@ ngx_event_process_init(ngx_cycle_t *cycle)
 #endif
     }
 
+	//将连接池组织成一个链表的结构
     i = cycle->connection_n;
     next = NULL;
 
@@ -932,7 +937,7 @@ ngx_events_block(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    *(void **) conf = ctx;
+    *(void **) conf = ctx;  //让总数组指向配置数组
 
     for (i = 0; ngx_modules[i]; i++) {
         if (ngx_modules[i]->type != NGX_EVENT_MODULE) {
@@ -949,6 +954,7 @@ ngx_events_block(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         }
     }
 
+	//递归处理event模块
     pcf = *cf;
     cf->ctx = ctx;
     cf->module_type = NGX_EVENT_MODULE;

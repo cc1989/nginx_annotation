@@ -117,7 +117,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         return NULL;
     }
 
-
+	//初始化路径
     n = old_cycle->paths.nelts ? old_cycle->paths.nelts : 10;
 
     cycle->paths.elts = ngx_pcalloc(pool, n * sizeof(ngx_path_t *));
@@ -132,6 +132,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     cycle->paths.pool = pool;
 
 
+	//打开文件的个数
     if (old_cycle->open_files.part.nelts) {
         n = old_cycle->open_files.part.nelts;
         for (part = old_cycle->open_files.part.next; part; part = part->next) {
@@ -149,7 +150,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         return NULL;
     }
 
-
+	//共享内存的个数
     if (old_cycle->shared_memory.part.nelts) {
         n = old_cycle->shared_memory.part.nelts;
         for (part = old_cycle->shared_memory.part.next; part; part = part->next)
@@ -167,7 +168,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         ngx_destroy_pool(pool);
         return NULL;
     }
-
+	//初始化监
     n = old_cycle->listening.nelts ? old_cycle->listening.nelts : 10;
 
     cycle->listening.elts = ngx_pcalloc(pool, n * sizeof(ngx_listening_t));
@@ -182,9 +183,10 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     cycle->listening.pool = pool;
 
 
+	//重用连接队列
     ngx_queue_init(&cycle->reusable_connections_queue);
 
-
+	//配置上下文
     cycle->conf_ctx = ngx_pcalloc(pool, ngx_max_module * sizeof(void *));
     if (cycle->conf_ctx == NULL) {
         ngx_destroy_pool(pool);
@@ -211,14 +213,14 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
     ngx_strlow(cycle->hostname.data, (u_char *) hostname, cycle->hostname.len);
 
-
+	//处理core模块，cycle用于存放所有CORE模块的配置，conf则是用于存放解析配置的上下文信息
     for (i = 0; ngx_modules[i]; i++) {
-        if (ngx_modules[i]->type != NGX_CORE_MODULE) {
-            continue;
+        if (ngx_modules[i]->type != NGX_CORE_MODULE) {  //跳过不是nginx的内核模块
+        	continue;
         }
 
         module = ngx_modules[i]->ctx;
-
+		//只有ngx_core_module有create_conf回调函数,这个会调用函数会创建ngx_core_conf_t结构，用于存储整个配置文件main scope范围内的信息，比如worker_processes，worker_cpu_affinity等
         if (module->create_conf) {
             rv = module->create_conf(cycle);
             if (rv == NULL) {
@@ -235,6 +237,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
     ngx_memzero(&conf, sizeof(ngx_conf_t));
     /* STUB: init array ? */
+	//args是配置文件中指令的信息的数组，args[0]是指令名，args[1] - args[n]是指令的参数，参数个数需要根据ngx_commond_t的type属性做校验。
     conf.args = ngx_array_create(pool, 10, sizeof(ngx_str_t));
     if (conf.args == NULL) {
         ngx_destroy_pool(pool);
@@ -252,13 +255,13 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     conf.cycle = cycle;
     conf.pool = pool;
     conf.log = log;
-    conf.module_type = NGX_CORE_MODULE;
-    conf.cmd_type = NGX_MAIN_CONF;
+    conf.module_type = NGX_CORE_MODULE;  //conf.module_type指示将要解析这个类型模块的指令。 
+    conf.cmd_type = NGX_MAIN_CONF;  //conf.cmd_type指示将要解析的指令的类型。  
 
 #if 0
     log->log_level = NGX_LOG_DEBUG_ALL;
 #endif
-
+	//对通过nginx -g xxx 设置的全局配置指令初始化、解析
     if (ngx_conf_param(&conf) != NGX_CONF_OK) {
         environ = senv;
         ngx_destroy_cycle_pools(&conf);
@@ -276,6 +279,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
                        cycle->conf_file.data);
     }
 
+	//初始化所有core module模块的config结构调用ngx_core_module_t的init_conf 。在所有core module中，只有ngx_core_module有init_conf回调，用于对ngx_core_conf_t中没有配置的字段设置默认值。
     for (i = 0; ngx_modules[i]; i++) {
         if (ngx_modules[i]->type != NGX_CORE_MODULE) {
             continue;
@@ -570,11 +574,11 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 #endif
         }
     }
-
+	//调用socket创建套接字 -> 调用setsockopt设置成可重用socket -> 设置成非阻塞socket -> 调用bind绑定要监听的socket地址 -> 调用listen转化成监听socket。
     if (ngx_open_listening_sockets(cycle) != NGX_OK) {
         goto failed;
     }
-
+	//根据cycle配置所有的监听socket，包括设置监听socket的接收缓冲区大小、发送缓冲区大小以及accept filter等。
     if (!ngx_test_config) {
         ngx_configure_listening_sockets(cycle);
     }
@@ -591,7 +595,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     }
 
     pool->log = cycle->log;
-
+	//调用所有模块的init_module回调函数，进行模块的初始化动作
     for (i = 0; ngx_modules[i]; i++) {
         if (ngx_modules[i]->init_module) {
             if (ngx_modules[i]->init_module(cycle) != NGX_OK) {

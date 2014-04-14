@@ -173,7 +173,7 @@ ngx_spawn_process(ngx_cycle_t *cycle, ngx_spawn_proc_pt proc, void *data,
             return NGX_INVALID_PID;
         }
 
-        ngx_channel = ngx_processes[s].channel[1];
+        ngx_channel = ngx_processes[s].channel[1];  //分配给当前子进程的描述符
 
     } else {
         ngx_processes[s].channel[0] = -1;

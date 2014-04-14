@@ -79,8 +79,8 @@ typedef void (*ngx_connection_handler_pt)(ngx_connection_t *c);
 #include <ngx_connection.h>
 
 
-#define LF     (u_char) 10
-#define CR     (u_char) 13
+#define LF     (u_char) 10  //换行
+#define CR     (u_char) 13  //回车
 #define CRLF   "\x0d\x0a"
 
 

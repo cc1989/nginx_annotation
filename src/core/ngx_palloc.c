@@ -29,6 +29,8 @@ ngx_create_pool(size_t size, ngx_log_t *log)
     p->d.failed = 0;
 
     size = size - sizeof(ngx_pool_t);
+	//此时的NGX_MAX_ALLOC_FROM_POOL = -1
+	ngx_log_debug1(NGX_LOG_DEBUG_ALLOC, log, 0, "NGX_MAX_ALLOC_FROM_POOL = %d", NGX_MAX_ALLOC_FROM_POOL);
     p->max = (size < NGX_MAX_ALLOC_FROM_POOL) ? size : NGX_MAX_ALLOC_FROM_POOL;
 
     p->current = p;

@@ -289,7 +289,7 @@ ngx_http_block(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         }
     }
 
-
+	//http各个阶段初始化
     if (ngx_http_init_phases(cf, cmcf) != NGX_OK) {
         return NGX_CONF_ERROR;
     }
@@ -635,7 +635,7 @@ ngx_http_merge_locations(ngx_conf_t *cf, ngx_queue_t *locations,
         return NGX_CONF_OK;
     }
 
-    ctx = (ngx_http_conf_ctx_t *) cf->ctx;
+    ctx = (ngx_http_conf_ctx_t *) cf->ctx;  //location所在server配置
     saved = *ctx;
 
     for (q = ngx_queue_head(locations);
@@ -1160,7 +1160,7 @@ ngx_http_add_listen(ngx_conf_t *cf, ngx_http_core_srv_conf_t *cscf,
         }
     }
 
-    sa = &lsopt->u.sockaddr;
+    sa = &lsopt->u.sockaddr; 
 
     switch (sa->sa_family) {
 

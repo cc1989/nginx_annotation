@@ -301,15 +301,15 @@ main(int argc, char *const *argv)
         return 1;
     }
 
-    if (ngx_save_argv(&init_cycle, argc, argv) != NGX_OK) {  //保存命令行参数
+    if (ngx_save_argv(&init_cycle, argc, argv) != NGX_OK) {
         return 1;
     }
 
-    if (ngx_process_options(&init_cycle) != NGX_OK) {  //处理配置文件路径
+    if (ngx_process_options(&init_cycle) != NGX_OK) {
         return 1;
     }
 
-    if (ngx_os_init(log) != NGX_OK) {  //和操作系统相关的初始化，如页大小，进程能打开的文件数等
+    if (ngx_os_init(log) != NGX_OK) {
         return 1;
     }
 
@@ -331,8 +331,6 @@ main(int argc, char *const *argv)
     }
 
     cycle = ngx_init_cycle(&init_cycle);
-	cycle->log->log_level |=  NGX_LOG_DEBUG | NGX_LOG_DEBUG_ALLOC | 
-		NGX_LOG_DEBUG_CORE | NGX_LOG_DEBUG_HTTP | NGX_LOG_DEBUG_EVENT | NGX_LOG_DEBUG_MUTEX;
     if (cycle == NULL) {
         if (ngx_test_config) {
             ngx_log_stderr(0, "configuration file %s test failed",
@@ -372,7 +370,7 @@ main(int argc, char *const *argv)
     }
 
     if (!ngx_inherited && ccf->daemon) {
-        if (ngx_daemon(cycle->log) != NGX_OK) {  //守护进程化
+        if (ngx_daemon(cycle->log) != NGX_OK) {
             return 1;
         }
 

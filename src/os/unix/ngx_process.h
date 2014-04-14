@@ -48,7 +48,7 @@ typedef struct {
 
 #define NGX_PROCESS_NORESPAWN     -1
 #define NGX_PROCESS_JUST_SPAWN    -2
-#define NGX_PROCESS_RESPAWN       -3
+#define NGX_PROCESS_RESPAWN       -3  //respawn重生
 #define NGX_PROCESS_JUST_RESPAWN  -4
 #define NGX_PROCESS_DETACHED      -5
 

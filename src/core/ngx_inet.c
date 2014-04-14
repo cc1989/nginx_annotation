@@ -683,7 +683,7 @@ ngx_parse_inet_url(ngx_pool_t *pool, ngx_url_t *u)
             if (u->listen) {
 
                 /* test value as port only */
-
+				//仅仅用作端口
                 n = ngx_atoi(host, last - host);
 
                 if (n != NGX_ERROR) {

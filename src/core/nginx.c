@@ -411,7 +411,7 @@ main(int argc, char *const *argv)
         ngx_single_process_cycle(cycle);
 
     } else {
-        ngx_master_process_cycle(cycle);
+        ngx_master_process_cycle(cycle);  //进入master进程循环
     }
 
     return 0;

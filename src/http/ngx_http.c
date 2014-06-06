@@ -331,7 +331,7 @@ ngx_http_block(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 
     /* optimize the lists of ports, addresses and server names */
-
+	
     if (ngx_http_optimize_servers(cf, cmcf, cmcf->ports) != NGX_OK) {
         return NGX_CONF_ERROR;
     }
@@ -1491,9 +1491,9 @@ ngx_http_server_names(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf,
     }
 
     cscfp = addr->servers.elts;
-
+	
     for (s = 0; s < addr->servers.nelts; s++) {
-
+		//每个server_name后面会带有多个域名
         name = cscfp[s]->server_names.elts;
 
         for (n = 0; n < cscfp[s]->server_names.nelts; n++) {
@@ -1533,8 +1533,8 @@ ngx_http_server_names(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf,
     hash.name = "server_names_hash";
     hash.pool = cf->pool;
 
-    if (ha.keys.nelts) {
-        hash.hash = &addr->hash;
+    if (ha.keys.nelts) {  //无通配
+        hash.hash = &addr->hash;  //非通配hash
         hash.temp_pool = NULL;
 
         if (ngx_hash_init(&hash, ha.keys.elts, ha.keys.nelts) != NGX_OK) {
@@ -1542,12 +1542,12 @@ ngx_http_server_names(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf,
         }
     }
 
-    if (ha.dns_wc_head.nelts) {
+    if (ha.dns_wc_head.nelts) {  //前缀通配
 
         ngx_qsort(ha.dns_wc_head.elts, (size_t) ha.dns_wc_head.nelts,
                   sizeof(ngx_hash_key_t), ngx_http_cmp_dns_wildcards);
 
-        hash.hash = NULL;
+        hash.hash = NULL;  //使用通配hash
         hash.temp_pool = ha.temp_pool;
 
         if (ngx_hash_wildcard_init(&hash, ha.dns_wc_head.elts,
@@ -1560,12 +1560,12 @@ ngx_http_server_names(ngx_conf_t *cf, ngx_http_core_main_conf_t *cmcf,
         addr->wc_head = (ngx_hash_wildcard_t *) hash.hash;
     }
 
-    if (ha.dns_wc_tail.nelts) {
+    if (ha.dns_wc_tail.nelts) {  //后缀通配
 
         ngx_qsort(ha.dns_wc_tail.elts, (size_t) ha.dns_wc_tail.nelts,
                   sizeof(ngx_hash_key_t), ngx_http_cmp_dns_wildcards);
 
-        hash.hash = NULL;
+        hash.hash = NULL;  //使用通配hash
         hash.temp_pool = ha.temp_pool;
 
         if (ngx_hash_wildcard_init(&hash, ha.dns_wc_tail.elts,

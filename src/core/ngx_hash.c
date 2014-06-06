@@ -244,10 +244,11 @@ ngx_hash_find_combined(ngx_hash_combined_t *hash, ngx_uint_t key, u_char *name,
     return NULL;
 }
 
-
+//一个hash_elt的大小
 #define NGX_HASH_ELT_SIZE(name)                                               \
     (sizeof(void *) + ngx_align((name)->key.len + 2, sizeof(void *)))
 
+//初始化之后不能修改，只能查找
 ngx_int_t
 ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
 {
@@ -282,6 +283,7 @@ ngx_hash_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names, ngx_uint_t nelts)
         start = hinit->max_size - 1000;
     }
 
+	//更新size来满足bucket_size
     for (size = start; size < hinit->max_size; size++) {
 
         ngx_memzero(test, size * sizeof(u_short));
@@ -349,7 +351,7 @@ found:
         len += test[i];
     }
 
-    if (hinit->hash == NULL) {
+    if (hinit->hash == NULL) {  //hash为空表示使用通配hash
         hinit->hash = ngx_pcalloc(hinit->pool, sizeof(ngx_hash_wildcard_t)
                                              + size * sizeof(ngx_hash_elt_t *));
         if (hinit->hash == NULL) {
@@ -413,7 +415,7 @@ found:
 
         elt = (ngx_hash_elt_t *) ((u_char *) buckets[i] + test[i]);
 
-        elt->value = NULL;
+        elt->value = NULL;  //前面每个test加上sizeof(void *)就是为了这个value指针
     }
 
     ngx_free(test);
@@ -564,10 +566,10 @@ ngx_hash_wildcard_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names,
 #endif
         }
 
-        if (next_names.nelts) {
+        if (next_names.nelts) {  //next_names中有元素
 
             h = *hinit;
-            h.hash = NULL;
+            h.hash = NULL;  //使用通配hash
 
             if (ngx_hash_wildcard_init(&h, (ngx_hash_key_t *) next_names.elts,
                                        next_names.nelts)
@@ -582,9 +584,9 @@ ngx_hash_wildcard_init(ngx_hash_init_t *hinit, ngx_hash_key_t *names,
                 wdc->value = names[n].value;
             }
 
-            name->value = (void *) ((uintptr_t) wdc | (dot ? 3 : 2));
+            name->value = (void *) ((uintptr_t) wdc | (dot ? 3 : 2));  //dot用于表示有无通配
 
-        } else if (dot) {
+        } else if (dot) {  //只有一个，那就是最终的值
             name->value = (void *) ((uintptr_t) name->value | 1);
         }
     }
@@ -719,7 +721,7 @@ ngx_hash_add_key(ngx_hash_keys_arrays_t *ha, ngx_str_t *key, void *value,
     if (flags & NGX_HASH_WILDCARD_KEY) {
 
         /*
-         * supported wildcards:
+         * supported wildcards:支持通配符
          *     "*.example.com", ".example.com", and "www.example.*"
          */
 
@@ -729,12 +731,12 @@ ngx_hash_add_key(ngx_hash_keys_arrays_t *ha, ngx_str_t *key, void *value,
 
             if (key->data[i] == '*') {
                 if (++n > 1) {
-                    return NGX_DECLINED;
+                    return NGX_DECLINED;  //非法
                 }
             }
 
             if (key->data[i] == '.' && key->data[i + 1] == '.') {
-                return NGX_DECLINED;
+                return NGX_DECLINED;  //非法
             }
         }
 
@@ -757,7 +759,7 @@ ngx_hash_add_key(ngx_hash_keys_arrays_t *ha, ngx_str_t *key, void *value,
             }
         }
 
-        if (n) {
+        if (n) {  //除了上面情况还包含*是非法的
             return NGX_DECLINED;
         }
     }
@@ -786,7 +788,7 @@ ngx_hash_add_key(ngx_hash_keys_arrays_t *ha, ngx_str_t *key, void *value,
             }
 
             if (ngx_strncmp(key->data, name[i].data, last) == 0) {
-                return NGX_BUSY;
+                return NGX_BUSY;  //key已经存在了
             }
         }
 
@@ -822,12 +824,12 @@ wildcard:
 
     /* wildcard hash */
 
-    k = ngx_hash_strlow(&key->data[skip], &key->data[skip], last - skip);
+    k = ngx_hash_strlow(&key->data[skip], &key->data[skip], last - skip);  //计算hash，不包括通配符
 
     k %= ha->hsize;
 
     if (skip == 1) {
-
+		//把exapmle.com当做key
         /* check conflicts in exact hash for ".example.com" */
 
         name = ha->keys_hash[k].elts;
@@ -896,7 +898,7 @@ wildcard:
             len++;
         }
 
-        if (len) {
+        if (len) {  //加一个.
             ngx_memcpy(&p[n], &key->data[1], len);
             n += len;
         }

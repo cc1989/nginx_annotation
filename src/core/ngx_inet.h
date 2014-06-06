@@ -90,7 +90,7 @@ typedef struct {
     unsigned                  one_addr:1;  /* compatibility */
 
     unsigned                  no_port:1;
-    unsigned                  wildcard:1;
+    unsigned                  wildcard:1;  //通配符
 
     socklen_t                 socklen;
     u_char                    sockaddr[NGX_SOCKADDRLEN];
